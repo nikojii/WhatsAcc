@@ -1,13 +1,18 @@
 package com.niko.whatsacc;
 
 
+import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
 import android.view.Menu;
@@ -21,10 +26,14 @@ import android.widget.SimpleCursorAdapter;
 import com.niko.whatsacc.db.AccountContract;
 import com.niko.whatsacc.db.AccountDBHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     public ListView listView;
     private AccountDBHelper aDBHelper;
+    private List<String> names;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         add_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                add_account(view);
+                addAccount(view);
             }
         });
         listView = (ListView)findViewById(R.id.account_list);
@@ -46,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //update new db entries to view, newest on bottom
+    //update new db entries to view, alphabetical order
     private void updateUI() {
         aDBHelper = new AccountDBHelper(MainActivity.this);
         SQLiteDatabase db = aDBHelper.getReadableDatabase();
@@ -56,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 AccountContract.AccountEntry.COLUMN_ACCOUNT
         };
 
-        String sortOrder = AccountContract.AccountEntry._ID + " ASC";
+        String sortOrder = AccountContract.AccountEntry.COLUMN_NAME + " ASC";
         Cursor c = db.query(
                 AccountContract.AccountEntry.TABLE_NAME,
                 projection,
@@ -76,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
                 new int[] { R.id.nameView, R.id.numberView },
                 0
         );
+        //save the names for easier access on UI elements
+        names = new ArrayList<String>();
+        c.moveToFirst();
+        while(!c.isAfterLast()) {
+            String name = c.getString(c.getColumnIndex(AccountContract.AccountEntry.COLUMN_NAME));
+            names.add(name);
+            c.moveToNext();
+        }
         listView.setAdapter(listAdapter);
         registerForContextMenu(listView);
 
@@ -103,10 +120,24 @@ public class MainActivity extends AppCompatActivity {
         }
         //remove all entries from db
         else if(id == R.id.action_delete_all) {
-            aDBHelper = new AccountDBHelper(MainActivity.this);
-            SQLiteDatabase db = aDBHelper.getWritableDatabase();
-            db.delete(AccountContract.AccountEntry.TABLE_NAME, null, new String[]{});
-            updateUI();
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.delete_all);
+            builder.setMessage(R.string.val_delete_all);
+            builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    aDBHelper = new AccountDBHelper(MainActivity.this);
+                    SQLiteDatabase db = aDBHelper.getWritableDatabase();
+                    db.delete(AccountContract.AccountEntry.TABLE_NAME, null, new String[]{});
+                    updateUI();
+                    return;
+                }
+            });
+            builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -117,14 +148,114 @@ public class MainActivity extends AppCompatActivity {
                                     ContextMenu.ContextMenuInfo menuInfo) {
         if(v.getId() == R.id.account_list) {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-            menu.setHeaderTitle("Tie jottai");
-            String[] menuItems = {"Poista"};
-            menu.add(menuItems[0]);
+            menu.setHeaderTitle(names.get(info.position));
+            String[] menuItems = {
+                    getString(R.string.copy_acc),
+                    getString(R.string.edit),
+                    getString(R.string.delete)
+            };
+            for(int i = 0; i < menuItems.length; i++) {
+                menu.add(menuItems[i]);
+            }
         }
     }
 
-    public void add_account(View view)
-    {
+    @Override
+    public boolean onContextItemSelected(MenuItem menuItem) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuItem.getMenuInfo();
+        int menuItemIndex = menuItem.getItemId();
+        switch (menuItemIndex) {
+            case 0: copyAccount(info.position);
+                    break;
+            case 1: editAccount(info.position);
+                    break;
+            case 2: deleteAccount(info.position);
+                    break;
+        }
+        return true;
+    }
+
+    //Copy selected account number to clipboard
+    private void copyAccount(int id) {
+        aDBHelper = new AccountDBHelper(MainActivity.this);
+        String name = names.get(id);
+        SQLiteDatabase db = aDBHelper.getReadableDatabase();
+        String[] projection = {
+                AccountContract.AccountEntry._ID,
+                AccountContract.AccountEntry.COLUMN_NAME,
+                AccountContract.AccountEntry.COLUMN_ACCOUNT
+        };
+        String selection = AccountContract.AccountEntry.COLUMN_NAME + " LIKE ?";
+        String[] selectionArgs = { name };
+        Cursor c = db.query(
+                AccountContract.AccountEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+        c.moveToFirst();
+        String accountNumber = c.getString(c.getColumnIndex(AccountContract.AccountEntry.COLUMN_ACCOUNT));
+        // Gets a handle to the clipboard service.
+        ClipboardManager clipboard = (ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(getString(R.string.acc_number), accountNumber);
+        clipboard.setPrimaryClip(clip);
+    }
+
+    private void editAccount(int id) {
+        aDBHelper = new AccountDBHelper(MainActivity.this);
+        SQLiteDatabase db = aDBHelper.getReadableDatabase();
+        String[] projection = {
+                AccountContract.AccountEntry._ID,
+                AccountContract.AccountEntry.COLUMN_NAME,
+                AccountContract.AccountEntry.COLUMN_ACCOUNT
+        };
+
+        String sortOrder = AccountContract.AccountEntry.COLUMN_NAME + " ASC";
+        Cursor c = db.query(
+                AccountContract.AccountEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private void deleteAccount(int id) {
+        String arg = "" + id;
+        aDBHelper = new AccountDBHelper(MainActivity.this);
+        SQLiteDatabase db = aDBHelper.getReadableDatabase();
+        String[] projection = {
+                AccountContract.AccountEntry._ID,
+                AccountContract.AccountEntry.COLUMN_NAME,
+                AccountContract.AccountEntry.COLUMN_ACCOUNT
+        };
+
+        String sortOrder = AccountContract.AccountEntry.COLUMN_NAME + " ASC";
+        Cursor c = db.query(
+                AccountContract.AccountEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+
+        // Define 'where' part of query.
+        String selection = AccountContract.AccountEntry._ID + " LIKE ?";
+        // Specify arguments in placeholder order.
+        String[] selectionArgs = { arg };
+        // Issue SQL statement.
+        db.delete(AccountContract.AccountEntry.TABLE_NAME, selection, selectionArgs);
+    }
+
+    public void addAccount(View view) {
         Intent intent = new Intent(this, AddAccountActivity.class);
         startActivity(intent);
     }

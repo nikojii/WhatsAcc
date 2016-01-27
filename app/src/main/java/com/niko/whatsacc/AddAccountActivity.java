@@ -16,7 +16,6 @@ import com.niko.whatsacc.db.AccountDBHelper;
 
 public class AddAccountActivity extends AppCompatActivity {
 
-    Intent intent = getIntent();
     private String regex = "^[\\w ]+$";
 
     @Override
@@ -31,8 +30,7 @@ public class AddAccountActivity extends AppCompatActivity {
     }
 
     //get the given name and account number, validate and save to db
-    public void newAccount(View view)
-    {
+    public void newAccount(View view) {
         EditText editTextName = (EditText)findViewById(R.id.name);
         EditText editTextNumber = (EditText)findViewById(R.id.number);
 
@@ -76,8 +74,7 @@ public class AddAccountActivity extends AppCompatActivity {
         return str.trim().length() == 0;
     }
 
-    public void cancel(View view)
-    {
+    public void cancel(View view) {
         super.finish();
     }
 

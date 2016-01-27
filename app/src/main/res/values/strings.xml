@@ -5,9 +5,17 @@
     <string name="acc_number">Tilinumero</string>
     <string name="acc_name">Nimi</string>
     <string name="title_activity_add_account">Lisää tilinumero</string>
-    <string name="button_add">Lisää</string>
-    <string name="button_cancel">Peruuta</string>
+    <string name="add">Lisää</string>
+    <string name="cancel">Peruuta</string>
     <string name="warn_empty">Täytä molemmat kohdat</string>
     <string name="warn_invalid_input">Vain kirjaimet, numerot ja välilyönnit kelpaavat</string>
     <string name="db_error">Virhe tallennettaessa tilinumeroa</string>
+    <string name="delete_all">Poista kaikki</string>
+    <string name="val_delete_all">Haluatko varmasti poistaa kaikki tilinumerot?</string>
+    <string name="yes">Kyllä</string>
+    <string name="no">Ei</string>
+    <string name="copy_acc">Kopioi tilinumero</string>
+    <string name="edit">Muokkaa</string>
+    <string name="delete">Poista</string>
+    <string name="val_delete">Haluatko varmasti poistaa tilinumeron</string>
 </resources>

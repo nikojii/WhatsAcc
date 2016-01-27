@@ -7,12 +7,12 @@
         android:id="@+id/nameView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:textSize="20dp"/>
+        android:text="@string/acc_name"
+        android:textSize="20sp"/>
     <TextView
         android:id="@+id/numberView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Number"
-        android:textSize="16dp"/>
+        android:text="@string/acc_number"
+        android:textSize="16sp"/>
 </LinearLayout>

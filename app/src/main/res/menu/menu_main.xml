@@ -5,11 +5,11 @@
     <item
         android:id="@+id/action_add_acc"
         android:orderInCategory="1"
-        android:title="Lisää tilinumero"
+        android:title="@string/action_add_acc"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_delete_all"
         android:orderInCategory="2"
-        android:title="Poista kaikki"
+        android:title="@string/delete_all"
         app:showAsAction="never" />
 </menu>
