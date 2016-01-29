@@ -18,4 +18,8 @@
     <string name="edit">Muokkaa</string>
     <string name="delete">Poista</string>
     <string name="val_delete">Haluatko varmasti poistaa tilinumeron</string>
+    <string name="copied">Tilinumero kopioitu leikepöydälle</string>
+    <string name="deleted">Poistettu</string>
+    <string name="title_edit_account">Muokkaa tilinumeroa</string>
+    <string name="longPressForMenu">Lisävalikko aukeaa painamalla pitkään</string>
 </resources>
