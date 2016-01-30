@@ -2,6 +2,7 @@ package com.niko.whatsacc;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -73,6 +74,11 @@ public class AddAccountActivity extends AppCompatActivity {
             return;
         }
 
+        if(nameInUse(name)) {
+            Toast.makeText(this, R.string.name_in_use, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         AccountDBHelper aDBHelper = new AccountDBHelper(AddAccountActivity.this);
         SQLiteDatabase db = aDBHelper.getWritableDatabase();
 
@@ -107,6 +113,11 @@ public class AddAccountActivity extends AppCompatActivity {
             return;
         }
 
+        if(!name.equals(oldName) && nameInUse(name)) {
+            Toast.makeText(this, R.string.name_in_use, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         AccountDBHelper aDBHelper = new AccountDBHelper(AddAccountActivity.this);
         SQLiteDatabase db = aDBHelper.getReadableDatabase();
 
@@ -124,6 +135,32 @@ public class AddAccountActivity extends AppCompatActivity {
             return;
         }
         super.finish();
+    }
+
+    private boolean nameInUse(String name) {
+        AccountDBHelper aDBHelper = new AccountDBHelper(AddAccountActivity.this);
+        SQLiteDatabase db = aDBHelper.getReadableDatabase();
+        String[] projection = {
+                AccountContract.AccountEntry.COLUMN_NAME,
+        };
+        String selection = AccountContract.AccountEntry.COLUMN_NAME + " LIKE ?";
+        String[] selectionArgs = { name };
+
+        Cursor c = db.query(
+                AccountContract.AccountEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if(c.getCount() == 0) {
+            return false;
+        }
+        return true;
+
     }
 
     private boolean isSane(String str) {
