@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     public ListView listView;
     private AccountDBHelper aDBHelper;
-    private List<String> names;
+    private ArrayList<String> names;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +195,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AddAccountActivity.class);
         intent.putExtra("name", names.get(id));
         intent.putExtra("number", getAccountNumber(id));
-        startActivity(intent);
+        intent.putStringArrayListExtra("names", names);
+        startActivityForResult(intent, 2);
     }
 
     //Delete the selected account information
@@ -215,12 +215,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void addAccount(View view) {
         Intent intent = new Intent(this, AddAccountActivity.class);
-        startActivity(intent);
-    }
-
-    public void onRestart() {
-        super.onRestart();
-        updateUI();
+        intent.putStringArrayListExtra("names", names);
+        startActivityForResult(intent, 1);
     }
 
     private String getAccountNumber(int id) {
@@ -246,4 +242,13 @@ public class MainActivity extends AppCompatActivity {
         c.moveToFirst();
         return c.getString(c.getColumnIndex(AccountContract.AccountEntry.COLUMN_ACCOUNT));
     }
-}
+
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent data) {
+        super.onRestart();
+        if(resultCode == RESULT_OK) {
+            updateUI();
+        }
+    }
+ }
+

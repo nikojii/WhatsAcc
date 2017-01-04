@@ -23,4 +23,5 @@
     <string name="title_edit_account">Muokkaa tilinumeroa</string>
     <string name="longPressForMenu">Lisävalikko aukeaa painamalla pitkään</string>
     <string name="name_in_use">Nimi on jo käytössä</string>
+    <string name="not_iban">Tilinumero ei ole IBAN-tilinumero</string>
 </resources>
